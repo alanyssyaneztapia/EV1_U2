@@ -17,13 +17,11 @@ export default function PostsPage() {
   const [loading, setLoading] = useState(true);
   const [warningMsg, setWarningMsg] = useState('');
 
-  // Cargar publicaciones al entrar (Endpoint público, sin token)
   const fetchPosts = async () => {
     try {
       const response = await fetch(`${API_URL}/posts`);
       if (response.ok) {
         const data = await response.json();
-        // Ajusta si tu backend devuelve { posts: [...] } o directamente el array [...]
         setPosts(Array.isArray(data) ? data : data.posts || []);
       }
     } catch (error) {
@@ -37,11 +35,9 @@ export default function PostsPage() {
     fetchPosts();
   }, []);
 
-  // Manejar clic en una reacción
   const handleReaction = async (postId, reactionType) => {
     setWarningMsg('');
-    
-    // Obtener el ID del usuario si está logueado (revisa cómo lo guardaste en tu login)
+
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
     const userId = storedUser?.id || storedUser?._id || null;
 
@@ -59,17 +55,15 @@ export default function PostsPage() {
         body: JSON.stringify(payload),
       });
 
-      // Regla: 409 Conflict si el usuario repite la misma reacción
       if (response.status === 409) {
         setWarningMsg('Ya has reaccionado con este emoji a esta publicación.');
         setTimeout(() => setWarningMsg(''), 4000);
         return;
       }
 
-      // Éxito: 201 Created -> actualizar contadores en tiempo real
       if (response.status === 201 || response.ok) {
         const result = await response.json();
-        // La API devuelve los contadores actualizados (counts)
+
         const updatedCounts = result.counts || result.reactions;
 
         setPosts((prevPosts) =>
@@ -105,7 +99,6 @@ export default function PostsPage() {
         </Link>
       </div>
 
-      {/* Mensaje de advertencia para error 409 */}
       {warningMsg && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-3 mb-4 rounded">
           ⚠️ {warningMsg}
@@ -115,7 +108,6 @@ export default function PostsPage() {
       <div className="space-y-6">
         {posts.map((post) => {
           const postId = post.id || post._id;
-          // Soporta tanto post.counts como post.reactions según venga del JSON
           const counts = post.counts || post.reactions || {};
 
           return (
@@ -138,8 +130,7 @@ export default function PostsPage() {
               </p>
 
               <p className="text-gray-700 whitespace-pre-line mb-5">{post.content}</p>
-
-              {/* Barra de 6 reacciones */}
+              
               <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
                 {REACTION_TYPES.map(({ type, emoji }) => (
                   <button
